@@ -15,9 +15,14 @@ class AuthRepo {
     final credential = await _auth.createUserWithEmailAndPassword(
         email: email, password: password);
     await _firestore.collection('users').doc(credential.user!.uid).set({
+      'uid': credential.user!.uid,
       'email': email,
       'isAdmin': false,
     });
+  }
+
+  Future<User?> getCurrentUser() async {
+    return _auth.currentUser;
   }
 
   Future<bool> isAdmin(String uid) async {
