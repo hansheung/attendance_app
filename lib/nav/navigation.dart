@@ -1,6 +1,8 @@
+import 'package:attendance_app/ui/admin/adminhome_screen.dart';
 import 'package:attendance_app/ui/auth/login_screen.dart';
+import 'package:attendance_app/ui/auth/register_screen.dart';
+import 'package:attendance_app/ui/user/userhome_screen.dart';
 import 'package:go_router/go_router.dart';
-
 
 class Navigation {
   static const initial = "/";
@@ -10,18 +12,22 @@ class Navigation {
       name: Screen.login.name,
       builder: (context, state) => const LoginScreen(),
     ),
-    // GoRoute(
-    //   path: "/add",
-    //   name: Screen.addTodo.name,
-    //   builder: (context, state) => const AddTodoScreen(),
-    // ),
-    // GoRoute(
-    //   path: "/update/:id",
-    //   name: Screen.updateTodo.name,
-    //   builder:
-    //       (context, state) => EditTodoScreen(id: state.pathParameters["id"]!),
-    // ),
+    GoRoute(
+      path: "/register",
+      name: Screen.register.name,
+      builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: "/user",
+      name: Screen.user.name,
+      builder: (context, state) => const UserhomeScreen(),
+    ),
+    GoRoute(
+      path: "/admin",
+      name: Screen.admin.name,
+      builder: (context, state) => const AdminHomeScreen(),
+    ),
   ];
 }
 
-enum Screen { login}
+enum Screen { login, register, user, admin }

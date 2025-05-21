@@ -15,13 +15,24 @@ class AuthRepo {
     final credential = await _auth.createUserWithEmailAndPassword(
         email: email, password: password);
     await _firestore.collection('users').doc(credential.user!.uid).set({
+      'uid': credential.user!.uid,
       'email': email,
       'isAdmin': false,
+      'lastLoggedIn': DateTime.now().toUtc().toIso8601String(), 
     });
+  }
+
+  Future<User?> getCurrentUser() async {
+    return _auth.currentUser;
   }
 
   Future<bool> isAdmin(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
     return doc.data()?['isAdmin'] ?? false;
   }
+
+  Future<void> logout() async{
+    await FirebaseAuth.instance.signOut();
+  }
+
 }
