@@ -64,8 +64,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+
+            SizedBox(height: 40.0),
             Center(
               child: Image.asset('assets/logo.png', height: 200, width: 200),
             ),
@@ -102,7 +103,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
 
-            // SizedBox(height: 12.0),
+            SizedBox(height: 18.0),
 
             ElevatedButton(
               onPressed: () => _register(context),

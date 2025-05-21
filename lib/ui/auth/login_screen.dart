@@ -68,12 +68,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login"), centerTitle: true),
+      appBar: AppBar(title: const Text("Login"), centerTitle: true, automaticallyImplyLeading: false,),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            SizedBox(height: 20.0),
+          
             Center(child: Image.asset('assets/logo.png',height: 200, width: 200,)),
 
             SizedBox(height: 12.0),
@@ -97,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            SizedBox(height: 12.0),
+            SizedBox(height: 15.0),
 
             ElevatedButton(
               onPressed: () => _login(context),

@@ -15,7 +15,7 @@ class AttendanceRepo {
     required String sitename,
     required LatLng location,
   }) async {
-    final expectedSite = LatLng(6.419910, 100.312764);
+    final expectedSite = LatLng(5.414183, 100.337117);
     final distance = const Distance().as(
       LengthUnit.Meter,
       expectedSite,
@@ -29,7 +29,7 @@ class AttendanceRepo {
       sitename: sitename,
       latitude: location.latitude,
       longitude: location.longitude,
-      timestamp: DateTime.now().toUtc().toIso8601String(),
+      timestamp: DateTime.now().toLocal().toIso8601String(),
       status: status,
     );
 

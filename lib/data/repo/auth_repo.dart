@@ -18,6 +18,7 @@ class AuthRepo {
       'uid': credential.user!.uid,
       'email': email,
       'isAdmin': false,
+      'lastLoggedIn': DateTime.now().toUtc().toIso8601String(), 
     });
   }
 
@@ -29,4 +30,9 @@ class AuthRepo {
     final doc = await _firestore.collection('users').doc(uid).get();
     return doc.data()?['isAdmin'] ?? false;
   }
+
+  Future<void> logout() async{
+    await FirebaseAuth.instance.signOut();
+  }
+
 }

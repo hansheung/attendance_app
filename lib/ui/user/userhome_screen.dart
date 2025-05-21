@@ -1,9 +1,16 @@
+import 'package:attendance_app/data/model/attendance.dart';
+import 'package:attendance_app/data/repo/attendance_repo.dart';
+import 'package:attendance_app/data/repo/auth_repo.dart';
+import 'package:attendance_app/nav/navigation.dart';
 import 'package:attendance_app/ui/user/mobile_scanner_advanced.dart';
+import 'package:attendance_app/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+
 
 class UserhomeScreen extends StatefulWidget {
   const UserhomeScreen();
@@ -14,31 +21,52 @@ class UserhomeScreen extends StatefulWidget {
 
 class _UserhomeScreenState extends State<UserhomeScreen> {
   String? scannedValue;
-
   LatLng? currentLatLng;
+
+  final repo = AttendanceRepo();
+  final authRepo = AuthRepo();
+
+  
+
+  String? uid;
+  String? email;
+  String? lastLoggedIn;
+
+  List<Attendance> attendance = [];
 
   @override
   void initState() {
     super.initState();
     _getLocation(); // fetch location on app start
+    _getLoggedInUser();
+  }
+
+  void _getLoggedInUser() async {
+    final user = await authRepo.getCurrentUser();
+    if (user != null) {
+      uid = user.uid;
+      email = user.email;
+      lastLoggedIn =
+          user.metadata.lastSignInTime?.toLocal().toString().split('.')[0];
+    }
+  }
+
+  void _logout() async {
+    await authRepo.logout();
+    if (mounted) {
+      context.pushNamed(Screen.login.name); // or your login route
+    }
   }
 
   Future<void> _getLocation() async {
-
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-
-    debugPrint("ServiceEnabled: $serviceEnabled");
-
     if (!serviceEnabled) {
       return;
     }
 
     LocationPermission permission = await Geolocator.checkPermission();
-
     if (permission == LocationPermission.denied) {
-
       permission = await Geolocator.requestPermission();
-
       if (permission == LocationPermission.denied) {
         return;
       }
@@ -122,13 +150,61 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Workers Attendance Tracker',
+          'Attendance Tracker',
           style: TextStyle(fontWeight: FontWeight.bold),
-          
         ),
         automaticallyImplyLeading: false,
         backgroundColor: Colors.blueAccent,
         elevation: 0,
+        actions: [
+          Builder(
+            builder:
+                (context) => IconButton(
+                  icon: const CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, color: Colors.blueAccent),
+                  ),
+                  onPressed: () => Scaffold.of(context).openEndDrawer(),
+                ),
+          ),
+        ],
+      ),
+      endDrawer: Drawer(
+        child: Column(
+          children: [
+            SizedBox(height: 40),
+
+            Icon(Icons.account_circle, size: 80, color: Colors.blueAccent),
+
+            SizedBox(height: 10),
+
+            Text(email ?? "No email", style: TextStyle(fontSize: 18)),
+
+            SizedBox(height: 10),
+
+            Text(
+              "Last login: ${lastLoggedIn ?? 'N/A'}",
+              style: TextStyle(color: Colors.grey),
+            ),
+
+            Spacer(),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton.icon(
+                onPressed: _logout,
+                icon: const Icon(Icons.logout, color: Colors.white),
+                label: const Text(
+                  "Logout",
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -143,7 +219,7 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
           child: ListView(
             physics: const BouncingScrollPhysics(),
             children: [
-              SizedBox(height: 20),
+              SizedBox(height: 10),
 
               if (scannedValue != null)
                 Padding(
@@ -151,7 +227,7 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
                   child: Text(
                     "Scanned Code: $scannedValue",
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18, color: Colors.white),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
 
@@ -211,6 +287,46 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
                     ),
                   ),
                 ),
+
+                SizedBox(height: 20.0),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Center(
+                    child: Text(
+                      "Attendance History",
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: FutureBuilder(
+                    future: repo.getUserAttendance(uid ?? ""),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      }
+                      final attendances = snapshot.data ?? [];
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: attendances.length,
+                        itemBuilder:
+                            (context, index) =>
+                                AttendanceItem(attendance: attendances[index]),
+                      );
+                    },
+                  ),
+                ),
               ] else
                 const Center(
                   child: Padding(
@@ -220,6 +336,69 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class AttendanceItem extends StatelessWidget {
+  AttendanceItem({super.key, required this.attendance});
+  final Attendance attendance;
+  final utils = Utils();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      //margin: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// Sitename
+            Row(
+              children: [
+                const Icon(Icons.location_on, color: Colors.blueAccent),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    attendance.sitename,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+
+                const Icon(Icons.access_time, color: Colors.orange),
+                const SizedBox(width: 8),
+                Text(
+                  utils.formatTimestamp(attendance.timestamp),
+                  style: const TextStyle(color: Colors.black87),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            /// Status
+            Row(
+              children: [
+                attendance.status == "Ok"
+                    ? Icon(Icons.check_circle, color: Colors.green)
+                    : Icon(Icons.cancel, color: Colors.red),
+
+                const SizedBox(width: 8),
+                Text(
+                  attendance.status,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
