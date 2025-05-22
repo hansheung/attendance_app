@@ -21,7 +21,7 @@ class AuthRepo {
       'lastLoggedIn': DateTime.now().toUtc().toIso8601String(), 
     });
   }
-
+ 
   Future<User?> getCurrentUser() async {
     return _auth.currentUser;
   }

@@ -35,6 +35,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   
     await repo.saveAttendance(
       user: user!.uid,
+      email: user.email!,
       sitename: sitename,
       location: LatLng(location.latitude, location.longitude),
     );

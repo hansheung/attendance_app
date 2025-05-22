@@ -1,4 +1,5 @@
 import 'package:attendance_app/ui/admin/adminhome_screen.dart';
+import 'package:attendance_app/ui/admin/site_screen.dart';
 import 'package:attendance_app/ui/auth/login_screen.dart';
 import 'package:attendance_app/ui/auth/register_screen.dart';
 import 'package:attendance_app/ui/user/userhome_screen.dart';
@@ -27,7 +28,13 @@ class Navigation {
       name: Screen.admin.name,
       builder: (context, state) => const AdminHomeScreen(),
     ),
+
+    GoRoute(
+      path: "/site",
+      name: Screen.site.name,
+      builder: (context, state) => const SiteScreen(),
+    ),
   ];
 }
 
-enum Screen { login, register, user, admin }
+enum Screen { login, register, user, admin, site }
