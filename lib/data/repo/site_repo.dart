@@ -21,23 +21,23 @@ class SiteRepo{
     });
   }
 
-  Future<Todo?> getTodoById(String docId) async{
-    final res = await _collection.doc(docId).get();
-    if((res.data() == null)){
-      return null;
-    }
-    return Todo.fromMap(res.data()!).copy(docId: res.id);
-  }
+  // Future<Todo?> getTodoById(String docId) async{
+  //   final res = await _collection.doc(docId).get();
+  //   if((res.data() == null)){
+  //     return null;
+  //   }
+  //   return Todo.fromMap(res.data()!).copy(docId: res.id);
+  // }
 
-  Future<void> addTodo(Todo todo) async{
-    await _collection.add(todo.toMap());
-  }
+  // Future<void> addTodo(Todo todo) async{
+  //   await _collection.add(todo.toMap());
+  // }
 
-  Future<void> updateTodo(Todo todo) async{
-    await _collection.doc(todo.docId!).set(todo.toMap());
-  }
+  // Future<void> updateTodo(Todo todo) async{
+  //   await _collection.doc(todo.docId!).set(todo.toMap());
+  // }
 
-  Future<void> deleteTodo(String docId) async {
-    await _collection.doc(docId).delete();
-  }
+  // Future<void> deleteTodo(String docId) async {
+  //   await _collection.doc(docId).delete();
+  // }
 }
