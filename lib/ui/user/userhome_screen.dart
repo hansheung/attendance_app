@@ -11,7 +11,6 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-
 class UserhomeScreen extends StatefulWidget {
   const UserhomeScreen();
 
@@ -25,8 +24,6 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
 
   final repo = AttendanceRepo();
   final authRepo = AuthRepo();
-
-  
 
   String? uid;
   String? email;
@@ -44,11 +41,21 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
   void _getLoggedInUser() async {
     final user = await authRepo.getCurrentUser();
     if (user != null) {
-      uid = user.uid;
-      email = user.email;
-      lastLoggedIn =
-          user.metadata.lastSignInTime?.toLocal().toString().split('.')[0];
+      setState(() {
+        uid = user.uid;
+        email = user.email;
+        lastLoggedIn =
+            user.metadata.lastSignInTime?.toLocal().toString().split('.')[0];
+      });
+      _loadAttendances();
     }
+  }
+
+  Future<void> _loadAttendances() async {
+    final attendances = await repo.getUserAttendance(uid!);
+    setState(() {
+      attendance = attendances;
+    });
   }
 
   void _logout() async {
@@ -83,75 +90,13 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
     });
   }
 
-  Widget _buildItem(
-    BuildContext context,
-    String label,
-    String subtitle,
-    Widget page,
-    IconData icon, {
-    bool expectResult = false,
-  }) {
-    return GestureDetector(
-      onTap: () async {
-        if (expectResult) {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => page),
-          );
-
-          if (result is Barcode) {
-            setState(() {
-              scannedValue = result.rawValue ?? 'No value';
-            });
-          }
-        } else {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
-        }
-      },
-      child: Card(
-        elevation: 5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(icon, size: 40, color: Colors.blueAccent),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Attendance Tracker',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         automaticallyImplyLeading: false,
         backgroundColor: Colors.blueAccent,
@@ -225,7 +170,7 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    "Scanned Code: $scannedValue",
+                    "Site: $scannedValue",
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
@@ -306,26 +251,29 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
 
                 Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: FutureBuilder(
-                    future: repo.getUserAttendance(uid ?? ""),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      }
-                      final attendances = snapshot.data ?? [];
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: attendances.length,
-                        itemBuilder:
-                            (context, index) =>
-                                AttendanceItem(attendance: attendances[index]),
-                      );
-                    },
-                  ),
+                  child:
+                      attendance.isEmpty
+                          ? Center(
+                            child: Text(
+                              "No records",
+                              style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16.0,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                          : ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount:
+                                attendance.length > 7 ? 7 : attendance.length,
+                            itemBuilder:
+                                (context, index) => AttendanceItem(
+                                  attendance: attendance[index],
+                                ),
+                          ),
                 ),
               ] else
                 const Center(
@@ -334,6 +282,69 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
                     child: CircularProgressIndicator(color: Colors.white),
                   ),
                 ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItem(
+    BuildContext context,
+    String label,
+    String subtitle,
+    Widget page,
+    IconData icon, {
+    bool expectResult = false,
+  }) {
+    return GestureDetector(
+      onTap: () async {
+        if (expectResult) {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => page),
+          );
+
+          if (result is String) {
+            setState(() {
+              scannedValue = result; // sitename from MobileScannerAdvanced
+            });
+            _loadAttendances(); // reload the list
+          }
+        } else {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
+        }
+      },
+      child: Card(
+        elevation: 5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(icon, size: 40, color: Colors.blueAccent),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, color: Colors.grey),
             ],
           ),
         ),
@@ -370,20 +381,6 @@ class AttendanceItem extends StatelessWidget {
                   ),
                 ),
 
-                const Icon(Icons.access_time, color: Colors.orange),
-                const SizedBox(width: 8),
-                Text(
-                  utils.formatTimestamp(attendance.timestamp),
-                  style: const TextStyle(color: Colors.black87),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            /// Status
-            Row(
-              children: [
                 attendance.status == "Ok"
                     ? Icon(Icons.check_circle, color: Colors.green)
                     : Icon(Icons.cancel, color: Colors.red),
@@ -395,6 +392,20 @@ class AttendanceItem extends StatelessWidget {
                     color: Colors.black87,
                     fontWeight: FontWeight.w500,
                   ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            /// Status
+            Row(
+              children: [
+                const Icon(Icons.access_time, color: Colors.orange),
+                const SizedBox(width: 8),
+                Text(
+                  utils.formatTimestamp(attendance.timestamp),
+                  style: const TextStyle(color: Colors.black87),
                 ),
               ],
             ),

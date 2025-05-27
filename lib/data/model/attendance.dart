@@ -1,7 +1,6 @@
-import 'package:latlong2/latlong.dart';
-
 class Attendance {
-  final String user; // new field
+  final String user; 
+  final String email;
   final String sitename;
   final double latitude;
   final double longitude;
@@ -10,6 +9,7 @@ class Attendance {
 
   Attendance({
     required this.user,
+    required this.email,    
     required this.sitename,
     required this.latitude,
     required this.longitude,
@@ -17,20 +17,23 @@ class Attendance {
     required this.status,
   });
 
+ 
   factory Attendance.fromMap(Map<String, dynamic> map) {
-    return Attendance(
-      user: map['user'] ?? '',
-      sitename: map['sitename'] ?? '',
-      latitude: (map['latitude'] as num).toDouble(),
-      longitude: (map['longitude'] as num).toDouble(),
-      timestamp: map['timestamp'] ?? '',
-      status: map['status'] ?? 'Unknown',
-    );
-  }
+  return Attendance(
+    user: map['user'],
+    email: map['email'],
+    sitename: map['sitename'],
+    latitude: map['latitude'],
+    longitude: map['longitude'],
+    timestamp: map['timestamp'],
+    status: map['status'],
+  );
+}
 
   Map<String, dynamic> toMap() {
     return {
       'user': user,
+      'email': email,
       'sitename': sitename,
       'latitude': latitude,
       'longitude': longitude,

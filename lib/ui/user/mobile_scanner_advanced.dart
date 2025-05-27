@@ -1,5 +1,6 @@
 import 'package:attendance_app/data/repo/attendance_repo.dart';
 import 'package:attendance_app/data/repo/auth_repo.dart';
+import 'package:attendance_app/data/repo/site_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -16,6 +17,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   final MobileScannerController controller = MobileScannerController();
   final repo = AttendanceRepo();
   final auth = AuthRepo();
+  final repoSite = SiteRepo();
 
   @override
   void dispose() {
@@ -25,22 +27,48 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
 
   void _onDetect(BarcodeCapture capture) async {
     final barcode = capture.barcodes.first;
-    debugPrint('Scanned: ${barcode.rawValue}');
     // You can also pause/resume the scanner here if needed:
     controller.stop();
 
-    final sitename = barcode.rawValue ?? 'Unknown';
-    final location = await Geolocator.getCurrentPosition();
     final user = await auth.getCurrentUser();
-  
-    await repo.saveAttendance(
-      user: user!.uid,
-      sitename: sitename,
-      location: LatLng(location.latitude, location.longitude),
+
+    final sitename = barcode.rawValue ?? 'Unknown Site';
+
+    final location = await Geolocator.getCurrentPosition();
+    final locationLatLng = LatLng(location.latitude, location.longitude);
+
+    final expectedSite = await repoSite.getSiteByName(sitename);
+
+    if (expectedSite == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Site not found: $sitename")));
+      Navigator.pop(context, "Site not found! $sitename");
+      return;
+    }
+
+    final expectedSiteLatLong = LatLng(
+      expectedSite.latitude,
+      expectedSite.longitude,
     );
 
+    final distance = const Distance().as(
+      LengthUnit.Meter,
+      expectedSiteLatLong,
+      locationLatLng,
+    );
 
-    Navigator.pop(context, barcode);
+    final status = distance <= expectedSite.distanceFromSite ? 'Ok' : 'Fail';
+
+    await repo.saveAttendance(
+      user: user!.uid,
+      email: user.email!,
+      sitename: sitename,
+      location: LatLng(location.latitude, location.longitude),
+      status: status,
+    );
+
+    Navigator.pop(context, sitename);
   }
 
   @override
@@ -49,10 +77,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
       appBar: AppBar(title: const Text('Advanced Scanner')),
       body: Stack(
         children: [
-          MobileScanner(
-            controller: controller,
-            onDetect: _onDetect,
-          ),
+          MobileScanner(controller: controller, onDetect: _onDetect),
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
