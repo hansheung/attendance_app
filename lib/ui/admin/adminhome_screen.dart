@@ -2,6 +2,7 @@ import 'package:attendance_app/data/model/attendance.dart';
 import 'package:attendance_app/data/repo/attendance_repo.dart';
 import 'package:attendance_app/data/repo/auth_repo.dart';
 import 'package:attendance_app/nav/navigation.dart';
+import 'package:attendance_app/ui/drawer/app_drawer.dart';
 import 'package:attendance_app/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -30,29 +31,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _getLoggedInUser();
-  }
-
-  void _getLoggedInUser() async {
-    final user = await authRepo.getCurrentUser();
-    if (user != null) {
-      setState(() {
-        uid = user.uid;
-        email = user.email;
-        lastLoggedIn =
-            user.metadata.lastSignInTime?.toLocal().toString().split('.')[0];
-      });
-
-      _loadAttendances();
-    }
-  }
-
-  void _navigateToAttendace() {
-    context.pushNamed(Screen.admin.name);
-  }
-
-  void _navigateToSite() {
-    context.pushNamed(Screen.site.name);
+    _loadAttendances();
   }
 
   Future<void> _loadAttendances() async {
@@ -81,20 +60,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     });
   }
 
-  void _logout() async {
-    await authRepo.logout();
-    if (mounted) {
-      context.pushNamed(Screen.login.name); // or your login route
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'Attendances',
-          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         automaticallyImplyLeading: false,
         backgroundColor: Colors.greenAccent,
@@ -122,62 +94,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ),
         ],
       ),
-      endDrawer: Drawer(
-        child: Column(
-          children: [
-            SizedBox(height: 40),
-
-            Icon(Icons.account_circle, size: 80, color: Colors.blueAccent),
-
-            SizedBox(height: 10),
-
-            Text(email ?? "No email", style: TextStyle(fontSize: 18)),
-
-            SizedBox(height: 10),
-
-            Text(
-              "Last login: ${lastLoggedIn ?? 'N/A'}",
-              style: TextStyle(color: Colors.grey),
-            ),
-
-            SizedBox(height: 20),
-
-            ListTile(
-              leading: Icon(
-                Icons.check_circle_outline,
-                color: Colors.greenAccent,
-              ),
-              title: Text("Attendances"),
-              onTap: _navigateToAttendace,
-            ),
-
-            SizedBox(height: 16),
-
-            ListTile(
-              leading: Icon(Icons.location_on, color: Colors.blueAccent),
-              title: Text("Site"),
-              onTap: _navigateToSite,
-            ),
-
-            Spacer(),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton.icon(
-                onPressed: _logout,
-                icon: const Icon(Icons.logout, color: Colors.white),
-                label: const Text(
-                  "Logout",
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      endDrawer: AppDrawer(),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -330,12 +247,15 @@ class AttendanceSearchDelegate extends SearchDelegate {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: filteredAttendances.length,
-          itemBuilder:
-              (context, index) =>
-                  AttendanceItem(attendance: filteredAttendances[index]),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: filteredAttendances.length,
+            itemBuilder:
+                (context, index) =>
+                    AttendanceItem(attendance: filteredAttendances[index]),
+          ),
         ),
       ),
     );

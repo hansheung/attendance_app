@@ -11,15 +11,16 @@ class AttendanceRepo {
     required String email,
     required String sitename,
     required LatLng location,
+    required String status, 
   }) async {
-    final expectedSite = LatLng(1.414183, 100.337117);
-    final distance = const Distance().as(
-      LengthUnit.Meter,
-      expectedSite,
-      location,
-    );
+    // final expectedSite = LatLng(1.414183, 100.337117);
+    // final distance = const Distance().as(
+    //   LengthUnit.Meter,
+    //   expectedSite,
+    //   location,
+    // );
 
-    final status = distance <= 50 ? 'Ok' : 'Fail';
+    // final status = distance <= 50 ? 'Ok' : 'Fail';
 
     final attendance = Attendance(
       user: user,
@@ -48,6 +49,7 @@ class AttendanceRepo {
 
   Future<List<Attendance>> getAttendances() async {
     final querySnapshot = await attendanceCollection
+        .orderBy('timestamp', descending: true)
         .get();
 
     return querySnapshot.docs

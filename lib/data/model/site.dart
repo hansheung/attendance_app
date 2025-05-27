@@ -1,15 +1,12 @@
-import 'dart:ffi';
-import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart';
-
 class Site {
-  final String docId;
+  final String? docId;
   final String sitename;
   final double latitude;
   final double longitude;
   final int distanceFromSite;
 
   Site({
-    required this.docId,
+    this.docId,
     required this.sitename,
     required this.latitude,
     required this.longitude,

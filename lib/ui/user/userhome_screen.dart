@@ -170,7 +170,7 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    "Scanned Code: $scannedValue",
+                    "Site: $scannedValue",
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
@@ -267,7 +267,8 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
                           : ListView.builder(
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
-                            itemCount: attendance.length > 7 ? 7 : attendance.length,
+                            itemCount:
+                                attendance.length > 7 ? 7 : attendance.length,
                             itemBuilder:
                                 (context, index) => AttendanceItem(
                                   attendance: attendance[index],
@@ -304,11 +305,11 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
             MaterialPageRoute(builder: (_) => page),
           );
 
-          if (result is Barcode) {
+          if (result is String) {
             setState(() {
-              scannedValue = result.rawValue ?? 'No value';
+              scannedValue = result; // sitename from MobileScannerAdvanced
             });
-            _loadAttendances();
+            _loadAttendances(); // reload the list
           }
         } else {
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
@@ -392,7 +393,6 @@ class AttendanceItem extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                
               ],
             ),
 
