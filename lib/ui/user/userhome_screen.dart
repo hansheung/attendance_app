@@ -18,7 +18,8 @@ class UserhomeScreen extends StatefulWidget {
   State<UserhomeScreen> createState() => _UserhomeScreenState();
 }
 
-class _UserhomeScreenState extends State<UserhomeScreen> {
+class _UserhomeScreenState extends State<UserhomeScreen>
+    with WidgetsBindingObserver {
   String? scannedValue;
   LatLng? currentLatLng;
 
@@ -34,8 +35,22 @@ class _UserhomeScreenState extends State<UserhomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _getLocation(); // fetch location on app start
     _getLoggedInUser();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // <--- Clean up
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _getLocation(); // <--- Refresh location when app resumes
+    }
   }
 
   void _getLoggedInUser() async {
