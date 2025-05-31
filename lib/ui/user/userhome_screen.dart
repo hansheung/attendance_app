@@ -32,6 +32,8 @@ class _UserhomeScreenState extends State<UserhomeScreen>
 
   List<Attendance> attendance = [];
 
+  final MapController _mapController = MapController();
+
   @override
   void initState() {
     super.initState();
@@ -99,10 +101,14 @@ class _UserhomeScreenState extends State<UserhomeScreen>
     }
 
     final position = await Geolocator.getCurrentPosition();
+    final newLatLng = LatLng(position.latitude, position.longitude);
 
     setState(() {
-      currentLatLng = LatLng(position.latitude, position.longitude);
+      currentLatLng = newLatLng;
     });
+
+    _mapController.move(newLatLng, _mapController.camera.zoom); // animate to new location
+
   }
 
   @override
@@ -216,6 +222,7 @@ class _UserhomeScreenState extends State<UserhomeScreen>
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: FlutterMap(
+                          mapController: _mapController,
                           options: MapOptions(
                             initialCenter: currentLatLng!,
                             initialZoom: 15,

@@ -37,11 +37,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _navigateToAdmin() {
-    context.pushNamed(Screen.admin.name);
+    context.goNamed(Screen.admin.name);
   }
 
   void _navigateToScanner() {
-    context.pushNamed(Screen.user.name);
+    context.goNamed(Screen.user.name);
   }
 
   void _login(BuildContext context) async {
