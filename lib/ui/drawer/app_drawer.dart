@@ -77,6 +77,14 @@ class _AppDrawerState extends State<AppDrawer> {
             onTap: () => context.pushNamed(Screen.site.name),
           ),
 
+          SizedBox(height: 16),
+
+          ListTile(
+            leading: Icon(Icons.download, color: Colors.black),
+            title: Text("Export CSV"),
+            onTap: () => context.pushNamed(Screen.export.name),
+          ),
+
           Spacer(),
           Padding(
             padding: const EdgeInsets.all(16.0),
