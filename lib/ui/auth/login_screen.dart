@@ -69,49 +69,51 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Login"), centerTitle: true, automaticallyImplyLeading: false,),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            SizedBox(height: 20.0),
-          
-            Center(child: Image.asset('assets/logo.png',height: 200, width: 200,)),
-
-            SizedBox(height: 12.0),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              SizedBox(height: 20.0),
             
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
+              Center(child: Image.asset('assets/logo.png',height: 200, width: 200,)),
+        
+              SizedBox(height: 12.0),
+              
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-
-            SizedBox(height: 12.0),
-
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
+        
+              SizedBox(height: 12.0),
+        
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-
-            SizedBox(height: 15.0),
-
-            ElevatedButton(
-              onPressed: () => _login(context),
-              child: const Text('Login'),
-            ),
-            TextButton(
-              onPressed: () => context.go('/register'),
-              child: const Text(
-                "New user, please register here",
-                style: TextStyle(fontWeight: FontWeight.bold),
+        
+              SizedBox(height: 15.0),
+        
+              ElevatedButton(
+                onPressed: () => _login(context),
+                child: const Text('Login'),
               ),
-            ),
-          ],
+              TextButton(
+                onPressed: () => context.go('/register'),
+                child: const Text(
+                  "New user, please register here",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

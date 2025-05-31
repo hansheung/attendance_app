@@ -61,55 +61,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Register"), centerTitle: true),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-
-            SizedBox(height: 40.0),
-            Center(
-              child: Image.asset('assets/logo.png', height: 200, width: 200),
-            ),
-
-            SizedBox(height: 12.0),
-
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+        
+              SizedBox(height: 40.0),
+              Center(
+                child: Image.asset('assets/logo.png', height: 200, width: 200),
               ),
-            ),
-
-            SizedBox(height: 12.0),
-
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
+        
+              SizedBox(height: 12.0),
+        
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-
-            SizedBox(height: 12.0),
-
-            TextField(
-              controller: confirmController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Confirm Password',
-                border: OutlineInputBorder(),
+        
+              SizedBox(height: 12.0),
+        
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-
-            SizedBox(height: 18.0),
-
-            ElevatedButton(
-              onPressed: () => _register(context),
-              child: const Text('Register'),
-            ),
-          ],
+        
+              SizedBox(height: 12.0),
+        
+              TextField(
+                controller: confirmController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Confirm Password',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+        
+              SizedBox(height: 18.0),
+        
+              ElevatedButton(
+                onPressed: () => _register(context),
+                child: const Text('Register'),
+              ),
+            ],
+          ),
         ),
       ),
     );

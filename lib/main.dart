@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         initialLocation: Navigation.initial,
         routes: Navigation.routes,),
       debugShowCheckedModeBanner: false,
-      title: 'Auth App',
+      title: 'Attendance App',
     );
   }
 }
