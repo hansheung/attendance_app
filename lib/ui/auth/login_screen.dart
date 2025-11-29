@@ -1,6 +1,7 @@
 import 'package:attendance_app/data/repo/auth_repo.dart';
 import 'package:attendance_app/nav/navigation.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _checkIfUserIsLoggedIn() async{
     final user = await authRepo.getCurrentUser();
-    
+    if (!mounted) return;
     if(user != null ){
       final isAdmin = await authRepo.isAdmin(user.uid);
       if(isAdmin){
@@ -50,18 +51,57 @@ class _LoginScreenState extends State<LoginScreen> {
         emailController.text,
         passwordController.text,
       );
-      if (user != null) {
-        final admin = await authRepo.isAdmin(user.uid);
-        if (admin) {
-          _navigateToAdmin();
-        } else {
-          _navigateToScanner();
-        }
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid email or password')),
+        );
+        return;
       }
+
+      final profile = await authRepo.getUserProfile(user.uid);
+      if (profile == null) {
+        await authRepo.logout();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid email or password')),
+        );
+        return;
+      }
+
+      await _completeLogin(user);
+    } on FirebaseAuthException catch (e) {
+      final invalidCredCodes = {
+        'wrong-password',
+        'user-not-found',
+        'invalid-credential',
+        'invalid-email',
+      };
+      final message =
+          invalidCredCodes.contains(e.code)
+              ? 'Invalid email or password'
+              : 'Login failed: ${e.message ?? e.code}';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: $e')),
+      );
+    }
+  }
+
+  Future<void> _completeLogin(User? user) async {
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid email or password')),
+      );
+      return;
+    }
+    final admin = await authRepo.isAdmin(user.uid);
+    if (!mounted) return;
+    if (admin) {
+      _navigateToAdmin();
+    } else {
+      _navigateToScanner();
     }
   }
 
@@ -109,6 +149,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () => context.go('/register'),
                 child: const Text(
                   "New user, please register here",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              TextButton(
+                onPressed: () => context.pushNamed(Screen.forgot.name),
+                child: const Text(
+                  "Forgot password?",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),

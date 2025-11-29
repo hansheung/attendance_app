@@ -12,6 +12,7 @@ class AttendanceRepo {
     required String sitename,
     required LatLng location,
     required String status, 
+    required String deviceId,
   }) async {
     // final expectedSite = LatLng(1.414183, 100.337117);
     // final distance = const Distance().as(
@@ -30,6 +31,7 @@ class AttendanceRepo {
       longitude: location.longitude,
       timestamp: DateTime.now().toLocal().toIso8601String(),
       status: status,
+      deviceId: deviceId,
     );
 
     await attendanceCollection.add(attendance.toMap());

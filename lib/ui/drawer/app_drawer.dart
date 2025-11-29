@@ -35,7 +35,8 @@ class _AppDrawerState extends State<AppDrawer> {
 
   void _logout() async {
     await authRepo.logout();
-    context.pushNamed(Screen.login.name);
+    if (!mounted) return;
+    context.goNamed(Screen.login.name);
   }
 
   @override

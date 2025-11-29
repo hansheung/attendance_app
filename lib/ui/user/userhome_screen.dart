@@ -78,7 +78,7 @@ class _UserhomeScreenState extends State<UserhomeScreen>
   void _logout() async {
     await authRepo.logout();
     if (mounted) {
-      context.pushNamed(Screen.login.name); // or your login route
+      context.goNamed(Screen.login.name);
     }
   }
 
@@ -107,8 +107,16 @@ class _UserhomeScreenState extends State<UserhomeScreen>
       currentLatLng = newLatLng;
     });
 
-    _mapController.move(newLatLng, _mapController.camera.zoom); // animate to new location
+    _mapController.move(
+      newLatLng,
+      _mapController.camera.zoom,
+    ); // animate to new location
+  }
 
+  void _recenterMap() {
+    if (currentLatLng != null) {
+      _mapController.move(currentLatLng!, _mapController.camera.zoom);
+    }
   }
 
   @override
@@ -221,32 +229,56 @@ class _UserhomeScreenState extends State<UserhomeScreen>
                       height: 250,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: FlutterMap(
-                          mapController: _mapController,
-                          options: MapOptions(
-                            initialCenter: currentLatLng!,
-                            initialZoom: 15,
-                          ),
+                        child: Stack(
                           children: [
-                            TileLayer(
-                              urlTemplate:
-                                  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                              subdomains: const ['a', 'b', 'c'],
-                              userAgentPackageName: 'com.example.app',
-                            ),
-                            MarkerLayer(
-                              markers: [
-                                Marker(
-                                  width: 50.0,
-                                  height: 50.0,
-                                  point: currentLatLng!,
-                                  child: const Icon(
-                                    Icons.location_pin,
-                                    size: 40,
-                                    color: Colors.red,
-                                  ),
+                            FlutterMap(
+                              mapController: _mapController,
+                              options: MapOptions(
+                                initialCenter: currentLatLng!,
+                                initialZoom: 15,
+                              ),
+                              children: [
+                                TileLayer(
+                                  urlTemplate:
+                                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                  subdomains: const ['a', 'b', 'c'],
+                                  // Use a real package/user-agent so OSM accepts the requests.
+                                  userAgentPackageName:
+                                      'com.example.attendance_app',
+                                ),
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      width: 50.0,
+                                      height: 50.0,
+                                      point: currentLatLng!,
+                                      child: const Icon(
+                                        Icons.location_pin,
+                                        size: 40,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                RichAttributionWidget(
+                                  attributions: [
+                                    TextSourceAttribution(
+                                      'OpenStreetMap contributors',
+                                    ),
+                                  ],
                                 ),
                               ],
+                            ),
+                            Positioned(
+                              right: 12,
+                              bottom: 12,
+                              child: FloatingActionButton.small(
+                                heroTag: 'recenter_map',
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.blueAccent,
+                                onPressed: _recenterMap,
+                                child: const Icon(Icons.my_location),
+                              ),
                             ),
                           ],
                         ),

@@ -2,6 +2,7 @@ import 'package:attendance_app/data/repo/attendance_repo.dart';
 import 'package:attendance_app/data/repo/auth_repo.dart';
 import 'package:attendance_app/data/repo/site_repo.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -26,49 +27,105 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   }
 
   void _onDetect(BarcodeCapture capture) async {
-    final barcode = capture.barcodes.first;
-    // You can also pause/resume the scanner here if needed:
+    if (capture.barcodes.isEmpty) return;
+    // Pause scanning while we process.
     controller.stop();
 
-    final user = await auth.getCurrentUser();
+    try {
+      final barcode = capture.barcodes.first;
+      final sitename = barcode.rawValue?.trim();
 
-    final sitename = barcode.rawValue ?? 'Unknown Site';
+      if (sitename == null || sitename.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Invalid QR: empty value")),
+        );
+        await controller.start();
+        return;
+      }
 
-    final location = await Geolocator.getCurrentPosition();
-    final locationLatLng = LatLng(location.latitude, location.longitude);
+      final user = await auth.getCurrentUser();
+      if (user == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Not logged in")));
+        await controller.start();
+        return;
+      }
 
-    final expectedSite = await repoSite.getSiteByName(sitename);
+      final location = await _getLocationSafe();
+      if (location == null) {
+        await controller.start();
+        return;
+      }
+      final deviceId = await auth.getDeviceId();
 
-    if (expectedSite == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Site not found: $sitename")));
-      Navigator.pop(context, "Site not found! $sitename");
-      return;
+      final expectedSite = await repoSite.getSiteByName(sitename);
+
+      if (expectedSite == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Site not found: $sitename")));
+        Navigator.pop(context, "Site not found! $sitename");
+        return;
+      }
+
+      final expectedSiteLatLong = LatLng(
+        expectedSite.latitude,
+        expectedSite.longitude,
+      );
+
+      final distance = const Distance().as(
+        LengthUnit.Meter,
+        expectedSiteLatLong,
+        LatLng(location.latitude, location.longitude),
+      );
+
+      final status = distance <= expectedSite.distanceFromSite ? 'Ok' : 'Fail';
+
+      await repo.saveAttendance(
+        user: user.uid,
+        email: user.email!,
+        sitename: sitename,
+        location: LatLng(location.latitude, location.longitude),
+        status: status,
+        deviceId: deviceId,
+      );
+
+      Navigator.pop(context, sitename);
+    } catch (e, st) {
+      debugPrint('Scan error: $e\n$st');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to record attendance: $e")),
+      );
+      await controller.start();
+    }
+  }
+
+  Future<Position?> _getLocationSafe() async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Location services are disabled.")),
+      );
+      return null;
     }
 
-    final expectedSiteLatLong = LatLng(
-      expectedSite.latitude,
-      expectedSite.longitude,
-    );
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
 
-    final distance = const Distance().as(
-      LengthUnit.Meter,
-      expectedSiteLatLong,
-      locationLatLng,
-    );
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Location permission is required.")),
+      );
+      return null;
+    }
 
-    final status = distance <= expectedSite.distanceFromSite ? 'Ok' : 'Fail';
-
-    await repo.saveAttendance(
-      user: user!.uid,
-      email: user.email!,
-      sitename: sitename,
-      location: LatLng(location.latitude, location.longitude),
-      status: status,
-    );
-
-    Navigator.pop(context, sitename);
+    return Geolocator.getCurrentPosition();
   }
 
   @override

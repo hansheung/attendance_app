@@ -50,7 +50,7 @@ class _ExportAttendanceScreenState extends State<ExportAttendanceScreen> {
   }
 
   void _applyFilter() {
-    setState(() {
+    setState(() { //Don't put complex logic in setState. setState we use to re-render.
       _filtered =
           _all.where((a) {
             final matchSite =

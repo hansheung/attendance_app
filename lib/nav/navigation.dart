@@ -5,6 +5,7 @@ import 'package:attendance_app/ui/admin/exportattendance_screen.dart';
 import 'package:attendance_app/ui/admin/site_screen.dart';
 import 'package:attendance_app/ui/auth/login_screen.dart';
 import 'package:attendance_app/ui/auth/register_screen.dart';
+import 'package:attendance_app/ui/auth/forgot_password_screen.dart';
 import 'package:attendance_app/ui/pages/splash_scree.dart';
 import 'package:attendance_app/ui/user/userhome_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +27,11 @@ class Navigation {
       path: "/register",
       name: Screen.register.name,
       builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: "/forgot",
+      name: Screen.forgot.name,
+      builder: (context, state) => const ForgotPasswordScreen(),
     ),
     GoRoute(
       path: "/user",
@@ -68,4 +74,4 @@ class Navigation {
   ];
 }
 
-enum Screen { splash, login, register, user, admin, site, addSite, updateSite, export }
+enum Screen { splash, login, register, forgot, user, admin, site, addSite, updateSite, export }

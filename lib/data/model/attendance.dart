@@ -6,6 +6,7 @@ class Attendance {
   final double longitude;
   final String timestamp;
   final String status;
+  final String? deviceId;
 
   Attendance({
     required this.user,
@@ -15,6 +16,7 @@ class Attendance {
     required this.longitude,
     required this.timestamp,
     required this.status,
+    this.deviceId,
   });
 
  
@@ -27,6 +29,7 @@ class Attendance {
     longitude: map['longitude'],
     timestamp: map['timestamp'],
     status: map['status'],
+    deviceId: map['deviceId'],
   );
 }
 
@@ -39,6 +42,7 @@ class Attendance {
       'longitude': longitude,
       'timestamp': timestamp,
       'status': status,
+      if (deviceId != null) 'deviceId': deviceId,
     };
   }
 

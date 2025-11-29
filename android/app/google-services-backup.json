@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "441932965940",
+    "project_id": "ttl-builder-attendance",
+    "storage_bucket": "ttl-builder-attendance.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:441932965940:android:f6581cf636681d85c0c261",
+        "android_client_info": {
+          "package_name": "com.example.attendance_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAg0Aw3xqAHxTCCtiB2b_8cnWfG5bFgbVE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
