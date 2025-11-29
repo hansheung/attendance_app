@@ -25,10 +25,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -71,4 +68,14 @@ class DefaultFirebaseOptions {
     storageBucket: 'attendance-app-ttl.firebasestorage.app',
     iosBundleId: 'com.example.attendanceApp',
   );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyA4y-2rpYKYyZDQpHRUmPXONeZsyHXHQK0',
+    appId: '1:441932965940:ios:e731b5a6fa817f1dc0c261',
+    messagingSenderId: '441932965940',
+    projectId: 'ttl-builder-attendance',
+    storageBucket: 'ttl-builder-attendance.firebasestorage.app',
+    iosBundleId: 'com.example.attendanceApp',
+  );
+
 }
